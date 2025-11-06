@@ -9,7 +9,10 @@ import android.provider.Settings
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-// Hapus import OkHttp yang tidak perlu di sini
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import androidx.work.* // <-- WorkManager diperlukan di sini
 import org.json.JSONArray
 import org.json.JSONObject
@@ -124,8 +127,39 @@ class MainActivity : AppCompatActivity() {
         // HAPUS: sendDataToServer(jsonArray, totalScreenTimeSeconds)
     }
 
+    private fun sendDataInstantly(jsonArray: JSONArray, totalScreenTimeSeconds: Long) {
+        Thread {
+            try {
+                // 1. BUAT OBJEK JSON UTAMA
+                val finalPayload = JSONObject()
+                finalPayload.put("total_screen_time_s", totalScreenTimeSeconds)
+                finalPayload.put("usage_data", jsonArray)
 
-    // FUNGSI sendDataToServer() DIHAPUS DARI SINI
+                val client = OkHttpClient()
+                val mediaType = "application/json; charset=utf-8".toMediaType()
+                val body = finalPayload.toString().toRequestBody(mediaType)
+
+                val request = Request.Builder()
+                    .url("http://192.168.1.200:5000/receive_usage")
+                    .post(body)
+                    .build()
+
+                val response = client.newCall(request).execute()
+                val respBody = response.body?.string()
+
+                runOnUiThread {
+                    tvResult.append("\n\n(INSTANT) Server Response: ${response.code}\n$respBody")
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                runOnUiThread {
+                    tvResult.append("\n\n(INSTANT) Gagal kirim data: ${e.message}")
+                }
+            }
+        }.start()
+    }
+
 
     // FUNGSI BARU: Menjadwalkan WorkManager
     private fun schedulePeriodicMonitoring() {
