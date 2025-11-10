@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from datetime import datetime
 import csv
 import os
+import fuzzy_logic
 
 app = Flask(__name__)
 
@@ -32,18 +33,6 @@ PACKAGE_NAME_MAP = {
     "com.android.systemui": "System UI",
     "com.miui.aod": "Always-on display"
 }
-
-# =======================
-# FUNGSI BANTU
-# =======================
-def fuzzy_level(total_hours):
-    """Menentukan level screen time berdasarkan total jam"""
-    if total_hours <= 2:
-        return "Low"
-    elif total_hours <= 5:
-        return "Moderate"
-    else:
-        return "High"
 
 def format_hms(seconds):
     """Konversi detik ke format H jam M menit S detik"""
@@ -87,7 +76,7 @@ def receive_usage():
     now = datetime.now().isoformat()
     formatted_total = format_hms(total_sec_all)
     total_hours = total_sec_all / 3600
-    level = fuzzy_level(total_hours)
+    level = fuzzy_logic.fuzzy_level(total_hours)
 
     print(f"\n[{now}] === Android Usage Data ===")
     print(f"Total Screen Time: {formatted_total} → Level: {level}")
