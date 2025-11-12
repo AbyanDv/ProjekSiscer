@@ -1,0 +1,10 @@
+{
+    "version": 1,
+    "author": "Zefa",
+    "parts": [
+      { "type": "board-esp32-devkit-c-v4", "id": "esp32" }
+    ],
+    "connections": [],
+    "serialMonitor": { "display": "terminal", "baudRate": 115200 }
+  }
+  

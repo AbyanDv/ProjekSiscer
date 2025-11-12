@@ -24,8 +24,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnRequestPermission: Button
     private lateinit var btnGetUsage: Button
 
-    // VARIABEL HANDLER/RUNNABLE DIHAPUS
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -56,7 +54,6 @@ class MainActivity : AppCompatActivity() {
             schedulePeriodicMonitoring()
         }
     }
-
     private fun hasUsageAccess(): Boolean {
         // ... (Fungsi ini tetap sama)
         val appOps = getSystemService(Context.APP_OPS_SERVICE) as android.app.AppOpsManager
@@ -67,7 +64,6 @@ class MainActivity : AppCompatActivity() {
         )
         return mode == android.app.AppOpsManager.MODE_ALLOWED
     }
-
     private fun requestUsageAccess() {
         startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
 
@@ -76,7 +72,6 @@ class MainActivity : AppCompatActivity() {
         }
         startActivity(batteryIntent)
     }
-
     private fun showPopupMessage(message: String) {
         runOnUiThread {
             val builder = androidx.appcompat.app.AlertDialog.Builder(this)
@@ -205,7 +200,6 @@ class MainActivity : AppCompatActivity() {
             }
         }.start()
     }
-
     private fun schedulePeriodicMonitoring() {
         val workManager = WorkManager.getInstance(applicationContext)
         val tag = "UsageMonitorTag"

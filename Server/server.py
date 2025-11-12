@@ -3,36 +3,9 @@ from datetime import datetime
 import csv
 import os
 import fuzzy_logic
+from package_map import PACKAGE_NAME_MAP, APP_CATEGORY_MAP
 
 app = Flask(__name__)
-
-# =======================
-# MAPPING APLIKASI ANDROID
-# =======================
-PACKAGE_NAME_MAP = {
-    "com.ss.android.ugc.trill": "TikTok",
-    "com.twitter.android": "Twitter",
-    "com.whatsapp": "WhatsApp",
-    "com.instagram.android": "Instagram",
-    "com.miui.home": "System launcher",
-    "com.android.chrome": "Chrome",
-    "com.google.android.apps.docs.editors.sheets": "Google Sheets",
-    "com.google.android.apps.tachyon": "Google Meet",
-    "com.miui.securitycenter": "Security",
-    "com.google.android.youtube": "YouTube",
-    "com.android.vending": "Google Play Store",
-    "com.miui.gallery": "Gallery",
-    "com.facebook.katana": "Facebook",
-    "org.telegram.messenger": "Telegram",
-    "com.google.android.packageinstaller": "Package Installer",
-    "com.google.android.apps.wellbeing": "Digital Wellbeing",
-    "com.google.android.permissioncontroller": "Permission Controller",
-    "com.miui.cleaner": "Cleaner",
-    "com.xiaomi.account": "Xiaomi Account",
-    "com.mi.android.globalFileexplorer": "File Manager",
-    "com.android.systemui": "System UI",
-    "com.miui.aod": "Always-on display"
-}
 
 def format_hms(seconds):
     """Konversi detik ke format H jam M menit S detik"""
@@ -52,8 +25,8 @@ if not os.path.exists(CSV_USAGE):
     with open(CSV_USAGE, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow([
-            "timestamp", "app_name", "package", "usage_time", 
-            "total_screen_time", "fuzzy_level"
+            "timestamp", "app_name", "package", "category",
+            "usage_time", "total_screen_time", "fuzzy_level"
         ])
 
 if not os.path.exists(CSV_SENSOR):
@@ -90,8 +63,10 @@ def receive_usage():
             sec = item.get("foreground_time_s", 0)
             app_name = PACKAGE_NAME_MAP.get(pkg, pkg)
             formatted = format_hms(sec)
-            print(f" - {app_name} ({pkg}) → {formatted}")
-            writer.writerow([now, app_name, pkg, formatted, formatted_total, level])
+            print(f" - {app_name} ({pkg}) [{category}] → {formatted}")
+            category = APP_CATEGORY_MAP.get(pkg, "Lainnya")
+            writer.writerow([now, app_name, pkg, category, formatted, formatted_total, level])
+
 
     return jsonify({
     "status": "ok",
