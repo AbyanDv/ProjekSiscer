@@ -139,7 +139,7 @@ class UsageDataWorker(appContext: Context, workerParams: WorkerParameters) :
         val body = finalPayload.toString().toRequestBody(mediaType)
 
         val request = Request.Builder()
-            .url("http://LOQ-AndykaZefanyaBramantyo:5000/receive_usage")
+            .url("http://192.168.1.102:5000/receive_usage")
             .post(body)
             .build()
 
@@ -152,7 +152,6 @@ class UsageDataWorker(appContext: Context, workerParams: WorkerParameters) :
                 throw IOException("HTTP FAILED: ${response.code}")
             }
 
-            // Jika sukses → baca JSON
             if (responseBody != null) {
                 val json = JSONObject(responseBody)
                 val message = json.optString("message", "")

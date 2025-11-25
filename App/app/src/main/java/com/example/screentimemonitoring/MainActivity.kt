@@ -123,7 +123,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         tvResult.text = sb.toString()
-        // HAPUS: sendDataToServer(jsonArray, totalScreenTimeSeconds)
     }
     private fun schedulePeriodicMonitoring() {
         val workManager = WorkManager.getInstance(applicationContext)
@@ -141,7 +140,6 @@ class MainActivity : AppCompatActivity() {
         )
             .setConstraints(constraints)
             .addTag(tag)
-            // Pastikan Anda sudah menggunakan sintaks .Builder(UsageDataWorker::class.java)
             .build()
 
         workManager.enqueueUniquePeriodicWork(

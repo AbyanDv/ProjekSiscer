@@ -3,7 +3,7 @@ import time
 import random
 
 # GANTI DENGAN URL NGROK/SERVER FLASK ANDA (Misal: http://1a2b3c4d.ngrok.io/receive_sensor)
-SERVER_URL = "http://192.168.1.100:5000/receive_sensor" 
+SERVER_URL = "http://192.168.1.102:5000/receive_sensor" 
 
 def generate_sensor_data():
     """Menghasilkan data sensor simulasi."""

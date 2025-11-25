@@ -2,154 +2,137 @@ import numpy as np
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
 
-# --- 1. Definisi Variabel Input (Antecedent) ---
 
-# Lingkungan (Skala 1-100)
-temperature = ctrl.Antecedent(np.arange(1, 101, 1), 'temperature')
-humidity = ctrl.Antecedent(np.arange(1, 101, 1), 'humidity')
-air_quality = ctrl.Antecedent(np.arange(1, 101, 1), 'air_quality')
+# ====================================
+# DEFINITION WITH SKFUZZY (Sama seperti yang Anda berikan)
+# ====================================
 
-# Screentime (Skala 1-23 jam)
-total_screentime = ctrl.Antecedent(np.arange(1, 24, 1), 'total screentime')
-socialmedia_screentime = ctrl.Antecedent(np.arange(1, 24, 1), 'social media screentime')
-entertaiment_screentime = ctrl.Antecedent(np.arange(1, 24, 1), 'entertaiment screentime')
-game_screentime = ctrl.Antecedent(np.arange(1, 24, 1), 'game screentime')
+# Universe
+screen_universe = np.arange(0, 13, 1) # 0 hingga 12 jam
+temp_universe = np.arange(10, 41, 1)  # 10 hingga 40 °C
+stress_universe = np.arange(0, 101, 1) # 0 hingga 100
+humid_universe = np.arange(0, 101, 1) # 0 hingga 100 %
+aq_universe = np.arange(0, 101, 1)    # 0 hingga 100 (misalnya, indeks kualitas udara terbalik)
 
-# --- 2. Definisi Variabel Output (Consequent) ---
+# Input fuzzy variables
+screen = ctrl.Antecedent(screen_universe, "screen") 
+temp = ctrl.Antecedent(temp_universe, "temperature")
+humid = ctrl.Antecedent(humid_universe, "humidity")
+airq = ctrl.Antecedent(aq_universe, "air_quality")
 
-# Output: Kenyamanan/Mood (Skala 0-100, 100 = Sangat Baik)
-kenyamanan = ctrl.Consequent(np.arange(0, 101, 1), 'kenyamanan')
+# Output fuzzy variable
+stress = ctrl.Consequent(stress_universe, "stress")
 
+# Membership functions
+screen['rendah'] = fuzz.trimf(screen_universe, [0, 0, 4])
+screen['sedang'] = fuzz.trimf(screen_universe, [3, 5.5, 8])
+screen['tinggi'] = fuzz.trimf(screen_universe, [7, 10, 12])
 
-# --- 3. Fungsi Keanggotaan (Membership Functions) ---
+temp['dingin'] = fuzz.trimf(temp_universe, [10, 18, 22])
+temp['nyaman'] = fuzz.trimf(temp_universe, [20, 24, 28])
+temp['panas'] = fuzz.trimf(temp_universe, [26, 30, 40])
 
-# Temperature
-temperature['Terlalu dingin'] = fuzz.trimf(temperature.universe, [0, 0, 20])
-temperature['Dingin'] = fuzz.trimf(temperature.universe, [20, 21, 23])
-temperature['Normal'] = fuzz.trimf(temperature.universe, [22, 23, 26])
-temperature['Panas'] = fuzz.trimf(temperature.universe, [26, 28, 30])
-temperature['Terlalu panas'] = fuzz.trimf(temperature.universe, [30, 100, 100])
+stress['rendah'] = fuzz.trimf(stress_universe, [0, 20, 40])
+stress['sedang'] = fuzz.trimf(stress_universe, [30, 50, 70])
+stress['tinggi'] = fuzz.trimf(stress_universe, [60, 80, 100])
 
-# Humidity
-# FIX: trap mf membutuhkan 4 titik, bukan 3.
-humidity['kering'] = fuzz.trapmf(humidity.universe, [0, 0, 40, 50])
-humidity['ideal'] = fuzz.trimf(humidity.universe, [45, 60, 75])
-humidity['lembab'] = fuzz.trapmf(humidity.universe, [70, 85, 100, 100])
+humid['kering'] = fuzz.trimf(humid_universe, [0, 0, 35])
+humid['ideal'] = fuzz.trimf(humid_universe, [25, 50, 75])
+humid['lembab'] = fuzz.trimf(humid_universe, [65, 100, 100])
 
-# Air Quality
-air_quality['buruk'] = fuzz.trimf(air_quality.universe, [0, 0, 35])
-air_quality['sedang'] = fuzz.trimf(air_quality.universe, [30, 60, 80])
-air_quality['bagus'] = fuzz.trimf(air_quality.universe, [75, 100, 100])
+airq['buruk'] = fuzz.trimf(aq_universe, [0, 0, 40])
+airq['sedang'] = fuzz.trimf(aq_universe, [30, 50, 70])
+airq['baik'] = fuzz.trimf(aq_universe, [60, 100, 100])
 
-# Total Screentime
-total_screentime['minimal'] = fuzz.trimf(total_screentime.universe, [1, 1, 6])
-total_screentime['wajar'] = fuzz.trimf(total_screentime.universe, [4, 8, 12])
-total_screentime['berlebihan'] = fuzz.trimf(total_screentime.universe, [10, 23, 23])
-
-# Social Media Screentime
-socialmedia_screentime['sedikit'] = fuzz.trimf(socialmedia_screentime.universe, [1, 1, 3])
-socialmedia_screentime['standar'] = fuzz.trimf(socialmedia_screentime.universe, [2, 5, 8])
-socialmedia_screentime['banyak'] = fuzz.trimf(socialmedia_screentime.universe, [7, 23, 23])
-
-# Entertaiment Screentime
-entertaiment_screentime['rendah'] = fuzz.trimf(entertaiment_screentime.universe, [1, 1, 4])
-entertaiment_screentime['tinggi'] = fuzz.trimf(entertaiment_screentime.universe, [3, 23, 23])
-
-# Game Screentime
-game_screentime['jarang'] = fuzz.trimf(game_screentime.universe, [1, 1, 2])
-game_screentime['sering'] = fuzz.trimf(game_screentime.universe, [1, 23, 23])
-
-# Kenyamanan (Output)
-kenyamanan['sangat_rendah'] = fuzz.trimf(kenyamanan.universe, [0, 0, 25])
-kenyamanan['rendah'] = fuzz.trimf(kenyamanan.universe, [10, 30, 50])
-kenyamanan['netral'] = fuzz.trimf(kenyamanan.universe, [40, 50, 60])
-kenyamanan['tinggi'] = fuzz.trimf(kenyamanan.universe, [50, 70, 90])
-kenyamanan['sangat_tinggi'] = fuzz.trimf(kenyamanan.universe, [75, 100, 100])
-
-
-# --- 4. Aturan Fuzzy (Fuzzy Rules) ---
-
-aturan1 = ctrl.Rule(
-    (temperature['Normal'] & humidity['ideal'] & air_quality['bagus']) &
-    (total_screentime['minimal'] | total_screentime['wajar']), 
-    kenyamanan['sangat_tinggi']
-)
-
-aturan2 = ctrl.Rule(
-    (temperature['Terlalu panas'] | temperature['Terlalu dingin'] | humidity['lembab'] | air_quality['buruk']), 
-    kenyamanan['sangat_rendah']
-)
-
-aturan3 = ctrl.Rule(
-    (total_screentime['berlebihan']) | 
-    (socialmedia_screentime['banyak'] & game_screentime['sering']),
-    kenyamanan['rendah']
-)
-
-aturan4 = ctrl.Rule(
-    (air_quality['sedang'] & humidity['ideal']) & 
-    (total_screentime['wajar']),
-    kenyamanan['netral']
-)
-
-aturan5 = ctrl.Rule(
-    temperature['Panas'] & entertaiment_screentime['tinggi'],
-    kenyamanan['rendah']
-)
-
-
-# --- 5. Sistem Kontrol dan Simulasi ---
-
-kenyamanan_ctrl = ctrl.ControlSystem([aturan1, aturan2, aturan3, aturan4, aturan5])
-kenyamanan_simulasi = ctrl.ControlSystemSimulation(kenyamanan_ctrl)
-
-# --- 6. Input dan Komputasi (Testing App) ---
-
-# Contoh Input CRISP (Nilai yang akan diuji)
-# PERHATIAN: Variabel input diakses menggunakan kurung siku [].
-kenyamanan_simulasi.input['temperature'] = 28  
-kenyamanan_simulasi.input['humidity'] = 65    
-kenyamanan_simulasi.input['air_quality'] = 85  
-kenyamanan_simulasi.input['total screentime'] = 14 
-kenyamanan_simulasi.input['social media screentime'] = 7
-kenyamanan_simulasi.input['entertaiment screentime'] = 5
-kenyamanan_simulasi.input['game screentime'] = 1 
-
-# Menjalankan komputasi
-try:
-    kenyamanan_simulasi.compute()
+# ====================================
+# RULE BASE (Sama seperti yang Anda berikan)
+# ====================================
+rules = [
+    # 9 ATURAN DASAR (Screen & Temp) - Jika lingkungan Ideal, stres normal
+    ctrl.Rule(screen['rendah'] & temp['dingin'] & humid['ideal'] & airq['baik'], stress['rendah']),
+    ctrl.Rule(screen['rendah'] & temp['nyaman'] & humid['ideal'] & airq['baik'], stress['rendah']),
+    ctrl.Rule(screen['rendah'] & temp['panas'] & humid['ideal'] & airq['baik'], stress['sedang']),
     
-    # Mengambil hasil defuzzifikasi
-    persentase_kenyamanan = kenyamanan_simulasi.output['kenyamanan']
-
-    # Konversi hasil ke Level dan Pesan
-    if persentase_kenyamanan >= 75:
-        level = "Sangat Baik (Optimal)"
-        pesan = "Kombinasi lingkungan dan screentime Anda mendekati ideal. Pertahankan!"
-    elif persentase_kenyamanan >= 55:
-        level = "Baik (Seimbang)"
-        pesan = "Kondisi cukup baik, ada sedikit faktor yang menurunkan mood tapi masih terkendali."
-    elif persentase_kenyamanan >= 40:
-        level = "Netral (Waspada)"
-        pesan = "Ada beberapa faktor signifikan (seperti screentime berlebihan) yang perlu diatasi."
-    elif persentase_kenyamanan >= 25:
-        level = "Kurang Baik (Perlu Perubahan)"
-        pesan = "Banyak faktor yang mengganggu kenyamanan. Segera periksa faktor lingkungan atau batasi screentime."
-    else:
-        level = "Sangat Rendah (Kritis)"
-        pesan = "Faktor lingkungan atau screentime berada di batas ekstrem dan sangat mempengaruhi mood."
-
-    # Tampilkan Hasil. Nilai input harus diakses menggunakan dot notation (.) untuk menghindari error.
-    # PERBAIKAN: Mengakses input menggunakan dot notation (misalnya: kenyamanan_simulasi.input.temperature)
-    print("--- HASIL SIMULASI FUZZY LOGIC ---")
-    print(f"Input: Temp={kenyamanan_simulasi.input.temperature}, Total ST={kenyamanan_simulasi.input['total screentime']}, SM ST={kenyamanan_simulasi.input['social media screentime']}")
-    print("-" * 35)
-    print(f"Derajat Kenyamanan (Crisp Value): {persentase_kenyamanan:.2f} / 100")
-    print(f"Level Kenyamanan: {level}")
-    print(f"Pesan: {pesan}")
+    ctrl.Rule(screen['sedang'] & temp['dingin'] & humid['ideal'] & airq['baik'], stress['sedang']),
+    ctrl.Rule(screen['sedang'] & temp['nyaman'] & humid['ideal'] & airq['baik'], stress['sedang']),
+    ctrl.Rule(screen['sedang'] & temp['panas'] & humid['ideal'] & airq['baik'], stress['tinggi']),
     
-except Exception as e:
-    # Mengganti pesan error yang lebih informatif
-    print("--- HASIL SIMULASI FUZZY LOGIC ---")
-    print(f"Terjadi Error saat komputasi: {e}")
-    print("Pastikan semua variabel input sudah diberi nilai.")
+    ctrl.Rule(screen['tinggi'] & temp['dingin'] & humid['ideal'] & airq['baik'], stress['tinggi']),
+    ctrl.Rule(screen['tinggi'] & temp['nyaman'] & humid['ideal'] & airq['baik'], stress['tinggi']),
+    ctrl.Rule(screen['tinggi'] & temp['panas'] & humid['ideal'] & airq['baik'], stress['tinggi']),
+    
+    # ATURAN PENALTI LINGKUNGAN (Memicu Stress Lebih Tinggi dari Kondisi Dasar)
+    
+    # Kualitas Udara Buruk
+    ctrl.Rule(airq['buruk'], stress['tinggi']), # Jika AQ buruk, stress pasti tinggi
+    
+    # Kelembaban Ekstrim (Kering atau Lembab)
+    ctrl.Rule(humid['kering'], stress['sedang']), 
+    ctrl.Rule(humid['lembab'], stress['sedang']),
+    
+    # Kualitas Udara Sedang + Layar Sedang/Tinggi
+    ctrl.Rule((screen['sedang'] | screen['tinggi']) & airq['sedang'], stress['tinggi'])
+]
+
+# Rule Base baru harus menggunakan semua Antecedent yang didefinisikan.
+stress_ctrl = ctrl.ControlSystem(rules)
+stress_sim = ctrl.ControlSystemSimulation(stress_ctrl)
+
+# ====================================
+# WRAPPER FUNCTION (Sudah Sinkron)
+# ====================================
+
+def calculate_stress(screentime, temperature, humidity, air_quality):
+    """
+    Menghitung tingkat stres menggunakan Logika Fuzzy berdasarkan 4 variabel:
+    waktu layar, suhu, kelembaban, dan kualitas udara.
+    """
+    
+    # Memastikan input sesuai dengan universe
+    screentime = max(0, min(screentime, 12)) 
+    temperature = max(10, min(temperature, 40)) 
+    humidity = max(0, min(humidity, 100)) # Baru
+    air_quality = max(0, min(air_quality, 100)) # Baru
+    
+    stress_sim.input['screen'] = screentime
+    stress_sim.input['temperature'] = temperature
+    stress_sim.input['humidity'] = humidity # Input Baru
+    stress_sim.input['air_quality'] = air_quality # Input Baru
+
+    try:
+        stress_sim.compute()
+        value = stress_sim.output['stress']
+    except ValueError as e:
+        print(f"Error komputasi fuzzy: {e}. Mengembalikan nilai default 50.")
+        value = 50 
+
+    category = (
+        "Rendah" if value < 35 else
+        "Sedang" if value < 65 else
+        "Tinggi"
+    )
+
+    message = {
+        "Rendah": "Kondisi kamu aman dan rileks 👍",
+        "Sedang": "Mulai perhatikan kondisi tubuh dan waktu layar 😊",
+        "Tinggi": "Tingkat stres tinggi! Kurangi layar dan istirahat 😣"
+    }[category]
+
+    return {
+        "stress_value": float(value),
+        "category": category,
+        "message": message
+    }
+
+if __name__ == '__main__':
+    # Contoh 1: Stress Tinggi karena Layar Tinggi dan Suhu Panas (seperti sebelumnya)
+    contoh_data_1 = calculate_stress(7, 30, 50, 90) # AQ Baik, Humid Ideal
+    print(f"Contoh 1 (Layar 7h, Suhu 30C, Humid 50%, AQ 90%): {contoh_data_1}") 
+    
+    # Contoh 2: Stress Naik karena AQ Buruk (Layar Rendah)
+    contoh_data_2 = calculate_stress(2, 25, 50, 30) # Layar Rendah, AQ Buruk
+    print(f"Contoh 2 (Layar 2h, Suhu 25C, Humid 50%, AQ 30%): {contoh_data_2}") 
+    
+    # Contoh 3: Stress Naik karena Kelembaban Ekstrim (Layar Rendah)
+    contoh_data_3 = calculate_stress(2, 25, 90, 90) # Layar Rendah, Humid Lembab
+    print(f"Contoh 3 (Layar 2h, Suhu 25C, Humid 90%, AQ 90%): {contoh_data_3}")
