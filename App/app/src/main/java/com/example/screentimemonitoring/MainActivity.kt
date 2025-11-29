@@ -10,8 +10,17 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.work.*
 import java.util.concurrent.TimeUnit
+import android.Manifest
+import android.content.pm.PackageManager
+import android.app.AlertDialog
+import android.widget.EditText
+import android.text.InputType
+import android.view.View
+import androidx.work.WorkInfo
 
 
 class MainActivity : AppCompatActivity() {
@@ -19,13 +28,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvResult: TextView
     private lateinit var btnRequestPermission: Button
     private lateinit var btnGetUsage: Button
-
+    private lateinit var btnChangeIp: Button
+    private val NOTIFICATION_PERMISSION_CODE = 101
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         tvResult = findViewById(R.id.tvResult)
         btnRequestPermission = findViewById(R.id.btnRequestPermission)
         btnGetUsage = findViewById(R.id.btnUsage)
+        btnChangeIp = findViewById(R.id.btnChangeIp)
+        setupChangeIpButton()
+        requestNotificationPermission()
         btnRequestPermission.setOnClickListener {
             requestUsageAccess()
         }
@@ -34,10 +47,7 @@ class MainActivity : AppCompatActivity() {
         }
         btnGetUsage.setOnClickListener {
             if (hasUsageAccess()) {
-                // 1. Tampilkan data sekali (untuk user melihat hasil)
                 showUsageStats()
-
-                // 2. Jadwalkan monitoring berkala WorkManager
                 schedulePeriodicMonitoring()
                 tvResult.append("\n\n✅ Monitoring Berkala (15 Menit) WorkManager Dijadwalkan!")
             } else {
@@ -45,10 +55,40 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Cek dan jadwalkan WorkManager saat aplikasi dimulai (opsional, tapi disarankan)
         if (hasUsageAccess()) {
             schedulePeriodicMonitoring()
         }
+    }
+
+    private fun setupChangeIpButton() {
+        btnChangeIp.setOnClickListener {
+            showIpInputDialog()
+        }
+    }
+
+    private fun showIpInputDialog() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Ubah Alamat Server Flask")
+
+        val input = EditText(this)
+        input.hint = "cth: http://192.168.1.105:5000"
+        input.setText(ServerConfig.BASE_URL)
+        input.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+        builder.setView(input)
+
+        builder.setPositiveButton("Simpan") { dialog, which ->
+            val newUrl = input.text.toString().trim()
+            if (newUrl.startsWith("http://", ignoreCase = true)) {
+                ServerConfig.BASE_URL = newUrl
+                tvResult.text = "✅ IP Server Diperbarui ke:\n$newUrl"
+                schedulePeriodicMonitoring()
+            } else {
+                tvResult.text = "❌ Format URL tidak valid (harus diawali http://)"
+            }
+        }
+        builder.setNegativeButton("Batal") { dialog, which -> dialog.cancel() }
+
+        builder.show()
     }
     private fun isIgnoringBatteryOptimizations(): Boolean {
         val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
@@ -58,6 +98,25 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
         intent.data = Uri.parse("package:$packageName")
         startActivity(intent)
+    }
+    private fun requestNotificationPermission() {
+        // Cek jika versi Android adalah TIRAMISU (API 33) atau lebih tinggi
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+
+            // Periksa apakah izin sudah diberikan
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // Minta izin notifikasi secara eksplisit
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    NOTIFICATION_PERMISSION_CODE
+                )
+            }
+        }
     }
     private fun hasUsageAccess(): Boolean {
         // ... (Fungsi ini tetap sama)

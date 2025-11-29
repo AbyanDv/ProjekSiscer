@@ -120,7 +120,7 @@ class UsageDataWorker(appContext: Context, workerParams: WorkerParameters) :
 
         val notification =
             NotificationCompat.Builder(applicationContext, channelId)
-                .setSmallIcon(android.R.drawable.ic_dialog_alert)
+                .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("Peringatan Penggunaan Layar")
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -137,9 +137,10 @@ class UsageDataWorker(appContext: Context, workerParams: WorkerParameters) :
         val client = OkHttpClient()
         val mediaType = "application/json; charset=utf-8".toMediaType()
         val body = finalPayload.toString().toRequestBody(mediaType)
+        val fullUrl = "${ServerConfig.BASE_URL}/receive_usage"
 
         val request = Request.Builder()
-            .url("http://192.168.1.102:5000/receive_usage")
+            .url(fullUrl)
             .post(body)
             .build()
 
