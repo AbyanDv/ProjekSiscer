@@ -1,0 +1,44 @@
+[
+    {
+        "jenis": "Fasttrack",
+        "nama_barang": "Bingkisan",
+        "berat": 7,
+        "jarak": 50,
+        "tanggal": "10\/12\/2025"
+    },
+    {
+        "jenis": "Reguler",
+        "nama_barang": "Sepatu Bola",
+        "berat": 0.5,
+        "jarak": 90,
+        "tanggal": "10\/12\/2025"
+    },
+    {
+        "jenis": "Kargo",
+        "nama_barang": "Dumbbell",
+        "berat": 12,
+        "jarak": 160,
+        "tanggal": "10\/12\/2025"
+    },
+    {
+        "jenis": "Reguler",
+        "nama_barang": "Monitor",
+        "berat": 2.5,
+        "jarak": 80,
+        "tanggal": "10\/12\/2025"
+    },
+    {
+        "jenis": "Fasttrack",
+        "nama_barang": "Kalung",
+        "berat": 0.2,
+        "jarak": 60,
+        "tanggal": "10\/12\/2025"
+    },
+    {
+        "jenis": "Reguler",
+        "nama_barang": "Jaket",
+        "berat": 0.7,
+        "jarak": 150,
+        "tanggal": "10\/12\/2025"
+    }
+]
